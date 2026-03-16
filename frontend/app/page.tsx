@@ -55,86 +55,36 @@ export default function Home() {
 
   if (authLoading) {
     return (
-      <main
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <p style={{ color: "var(--muted)" }}>Loading...</p>
+      <main className="min-h-screen flex items-center justify-center">
+        <p className="text-fg-muted">Loading...</p>
       </main>
     );
   }
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "2rem",
-      }}
-    >
-      <div
-        style={{
-          position: "absolute",
-          top: "1.5rem",
-          right: "1.5rem",
-          display: "flex",
-          alignItems: "center",
-          gap: "1rem",
-        }}
-      >
-        <span style={{ color: "var(--muted)", fontSize: "0.85rem" }}>
+    <main className="min-h-screen flex flex-col items-center justify-center p-8">
+      <div className="absolute top-6 right-6 flex items-center gap-4">
+        <span className="text-fg-muted text-sm">
           {user?.email}
         </span>
         <button
           onClick={handleSignOut}
-          style={{
-            padding: "0.5rem 1rem",
-            borderRadius: "6px",
-            border: "1px solid var(--card-border)",
-            background: "transparent",
-            color: "var(--muted)",
-            cursor: "pointer",
-            fontSize: "0.85rem",
-          }}
+          className="px-4 py-2 rounded-md border border-edge bg-transparent text-fg-muted cursor-pointer text-sm"
         >
           Sign out
         </button>
       </div>
 
-      <h1
-        style={{
-          fontSize: "2.5rem",
-          fontWeight: 700,
-          marginBottom: "0.5rem",
-        }}
-      >
+      <h1 className="text-4xl font-bold mb-2">
         Scopaly
       </h1>
-      <p
-        style={{
-          color: "var(--muted)",
-          marginBottom: "2rem",
-          fontSize: "1.1rem",
-        }}
-      >
+      <p className="text-fg-muted mb-8 text-lg">
         Enter a name, email, domain, or username to scan
       </p>
 
       <form
         onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          gap: "0.75rem",
-          width: "100%",
-          maxWidth: "600px",
-        }}
+        className="flex gap-3 w-full max-w-[600px]"
       >
         <input
           type="text"
@@ -142,37 +92,21 @@ export default function Home() {
           onChange={(e) => setQuery(e.target.value)}
           placeholder="john@example.com, @johndoe, example.com..."
           disabled={loading}
-          style={{
-            flex: 1,
-            padding: "0.875rem 1.25rem",
-            fontSize: "1rem",
-            borderRadius: "8px",
-            border: "1px solid var(--card-border)",
-            background: "var(--card-bg)",
-            color: "var(--fg)",
-            outline: "none",
-          }}
+          className="flex-1 py-3.5 px-5 text-base rounded-md border border-edge bg-surface text-fg outline-none"
         />
         <button
           type="submit"
           disabled={loading || !query.trim()}
-          style={{
-            padding: "0.875rem 2rem",
-            fontSize: "1rem",
-            fontWeight: 600,
-            borderRadius: "8px",
-            border: "none",
-            background: loading ? "var(--muted)" : "var(--accent)",
-            color: "#fff",
-            cursor: loading ? "wait" : "pointer",
-          }}
+          className={`py-3.5 px-8 text-base font-semibold rounded-md border-none text-white ${
+            loading ? "bg-fg-faint cursor-wait" : "bg-primary cursor-pointer"
+          }`}
         >
           {loading ? "Scanning..." : "Scan"}
         </button>
       </form>
 
       {error && (
-        <p style={{ color: "var(--danger)", marginTop: "1rem" }}>{error}</p>
+        <p className="text-danger mt-4">{error}</p>
       )}
     </main>
   );

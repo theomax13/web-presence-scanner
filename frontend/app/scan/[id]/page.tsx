@@ -17,50 +17,26 @@ function SourceCard({ result }: { result: ScanResult }) {
   const isPending = result.status === "pending";
 
   return (
-    <div
-      style={{
-        background: "var(--card-bg)",
-        border: "1px solid var(--card-border)",
-        borderRadius: "12px",
-        padding: "1.5rem",
-        marginBottom: "1rem",
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: "1rem",
-        }}
-      >
-        <h3 style={{ fontSize: "1.1rem", fontWeight: 600 }}>{label}</h3>
+    <div className="bg-surface border border-edge rounded-lg p-6 mb-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">{label}</h3>
         <span
-          style={{
-            fontSize: "0.8rem",
-            padding: "0.25rem 0.75rem",
-            borderRadius: "999px",
-            background: isPending
-              ? "var(--warning)"
-              : isError
-                ? "var(--danger)"
-                : "var(--success)",
-            color: "#000",
-            fontWeight: 600,
-          }}
+          className={`text-xs py-1 px-3 rounded-full font-semibold text-black ${
+            isPending ? "bg-warning" : isError ? "bg-danger" : "bg-success"
+          }`}
         >
           {result.status}
         </span>
       </div>
 
       {isError && (
-        <p style={{ color: "var(--danger)" }}>
+        <p className="text-danger">
           {result.error || "Error retrieving data from this source."}
         </p>
       )}
 
       {isPending && (
-        <p style={{ color: "var(--muted)" }}>Scanning...</p>
+        <p className="text-fg-muted">Scanning...</p>
       )}
 
       {result.status === "completed" && result.data && (
@@ -81,39 +57,27 @@ function SourceData({
     const breaches = (data.breaches as Array<Record<string, unknown>>) || [];
     if (breaches.length === 0) {
       return (
-        <p style={{ color: "var(--success)" }}>
+        <p className="text-success">
           No breaches found. Your email appears safe.
         </p>
       );
     }
     return (
       <div>
-        <p style={{ color: "var(--danger)", marginBottom: "0.75rem" }}>
+        <p className="text-danger mb-3">
           Found in <strong>{breaches.length}</strong> data breach
           {breaches.length > 1 ? "es" : ""}
         </p>
         {breaches.map((b, i) => (
           <div
             key={i}
-            style={{
-              padding: "0.75rem",
-              marginBottom: "0.5rem",
-              background: "rgba(239, 68, 68, 0.1)",
-              borderRadius: "8px",
-              border: "1px solid rgba(239, 68, 68, 0.2)",
-            }}
+            className="p-3 mb-2 bg-danger-muted rounded-md border border-danger/20"
           >
             <strong>{b.title as string}</strong>
-            <span style={{ color: "var(--muted)", marginLeft: "0.5rem" }}>
+            <span className="text-fg-muted ml-2">
               {b.breach_date as string}
             </span>
-            <div
-              style={{
-                fontSize: "0.85rem",
-                color: "var(--muted)",
-                marginTop: "0.25rem",
-              }}
-            >
+            <div className="text-sm text-fg-muted mt-1">
               Exposed: {(b.data_classes as string[])?.join(", ")}
             </div>
           </div>
@@ -126,50 +90,31 @@ function SourceData({
     const results =
       (data.results as Array<Record<string, string>>) || [];
     if (results.length === 0) {
-      return <p style={{ color: "var(--muted)" }}>No web results found.</p>;
+      return <p className="text-fg-muted">No web results found.</p>;
     }
     return (
       <div>
-        <p style={{ marginBottom: "0.75rem" }}>
+        <p className="mb-3">
           Found <strong>{results.length}</strong> web mention
           {results.length > 1 ? "s" : ""}
         </p>
         {results.map((r, i) => (
           <div
             key={i}
-            style={{
-              padding: "0.75rem",
-              marginBottom: "0.5rem",
-              background: "rgba(59, 130, 246, 0.1)",
-              borderRadius: "8px",
-              border: "1px solid rgba(59, 130, 246, 0.2)",
-            }}
+            className="p-3 mb-2 bg-info-muted rounded-md border border-info/20"
           >
             <a
               href={r.link}
               target="_blank"
               rel="noopener noreferrer"
-              style={{ fontWeight: 600 }}
+              className="font-semibold"
             >
               {r.title}
             </a>
-            <div
-              style={{
-                fontSize: "0.8rem",
-                color: "var(--muted)",
-                marginTop: "0.125rem",
-              }}
-            >
+            <div className="text-xs text-fg-muted mt-0.5">
               {r.display_link}
             </div>
-            <div
-              style={{
-                fontSize: "0.85rem",
-                color: "var(--fg)",
-                marginTop: "0.25rem",
-                opacity: 0.8,
-              }}
-            >
+            <div className="text-sm text-fg mt-1 opacity-80">
               {r.snippet}
             </div>
           </div>
@@ -179,13 +124,7 @@ function SourceData({
   }
 
   return (
-    <pre
-      style={{
-        fontSize: "0.8rem",
-        overflow: "auto",
-        whiteSpace: "pre-wrap",
-      }}
-    >
+    <pre className="text-xs overflow-auto whitespace-pre-wrap">
       {JSON.stringify(data, null, 2)}
     </pre>
   );
@@ -217,18 +156,9 @@ export default function ScanPage() {
 
   if (error) {
     return (
-      <main
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          flexDirection: "column",
-          gap: "1rem",
-        }}
-      >
-        <p style={{ color: "var(--danger)", fontSize: "1.2rem" }}>{error}</p>
-        <Link href="/" style={{ color: "var(--accent)" }}>
+      <main className="min-h-screen flex items-center justify-center flex-col gap-4">
+        <p className="text-danger text-xl">{error}</p>
+        <Link href="/" className="text-fg-link">
           Back to scanner
         </Link>
       </main>
@@ -237,76 +167,50 @@ export default function ScanPage() {
 
   if (!scan) {
     return (
-      <main
-        style={{
-          minHeight: "100vh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        <p style={{ color: "var(--muted)", fontSize: "1.2rem" }}>
+      <main className="min-h-screen flex items-center justify-center">
+        <p className="text-fg-muted text-xl">
           Loading scan results...
         </p>
       </main>
     );
   }
 
-  const statusColor =
+  const statusClass =
     scan.status === "completed"
-      ? "var(--success)"
+      ? "text-success"
       : scan.status === "failed"
-        ? "var(--danger)"
-        : "var(--warning)";
+        ? "text-danger"
+        : "text-warning";
 
   return (
-    <main
-      style={{
-        maxWidth: "800px",
-        margin: "0 auto",
-        padding: "2rem",
-      }}
-    >
+    <main className="max-w-3xl mx-auto p-8">
       <Link
         href="/"
-        style={{
-          color: "var(--muted)",
-          fontSize: "0.9rem",
-          display: "inline-block",
-          marginBottom: "1.5rem",
-        }}
+        className="text-fg-muted text-sm inline-block mb-6"
       >
         &larr; New scan
       </Link>
 
-      <div style={{ marginBottom: "2rem" }}>
-        <h1 style={{ fontSize: "1.8rem", fontWeight: 700 }}>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">
           Scan Results
         </h1>
-        <div
-          style={{
-            display: "flex",
-            gap: "1rem",
-            alignItems: "center",
-            marginTop: "0.5rem",
-            color: "var(--muted)",
-          }}
-        >
+        <div className="flex gap-4 items-center mt-2 text-fg-muted">
           <span>
-            Query: <strong style={{ color: "var(--fg)" }}>{scan.query}</strong>
+            Query: <strong className="text-fg">{scan.query}</strong>
           </span>
           <span>
             Type:{" "}
-            <strong style={{ color: "var(--fg)" }}>{scan.input_type}</strong>
+            <strong className="text-fg">{scan.input_type}</strong>
           </span>
-          <span style={{ color: statusColor, fontWeight: 600 }}>
+          <span className={`${statusClass} font-semibold`}>
             {scan.status}
           </span>
         </div>
       </div>
 
       {scan.results.length === 0 ? (
-        <p style={{ color: "var(--muted)" }}>
+        <p className="text-fg-muted">
           No results yet. The scan may still be processing.
         </p>
       ) : (

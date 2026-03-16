@@ -47,73 +47,36 @@ export default function LoginPage() {
   }
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "2rem",
-      }}
-    >
-      <h1 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "0.5rem" }}>
+    <main className="min-h-screen flex flex-col items-center justify-center p-8">
+      <h1 className="text-3xl font-bold mb-2">
         Scopaly
       </h1>
-      <p style={{ color: "var(--muted)", marginBottom: "2rem" }}>
+      <p className="text-fg-muted mb-8">
         {isSignUp ? "Create your account" : "Sign in to your account"}
       </p>
 
-      <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1.5rem" }}>
+      <div className="flex gap-3 mb-6">
         <button
           onClick={() => handleOAuth("google")}
-          style={{
-            padding: "0.75rem 1.5rem",
-            borderRadius: "8px",
-            border: "1px solid var(--card-border)",
-            background: "var(--card-bg)",
-            color: "var(--fg)",
-            cursor: "pointer",
-            fontSize: "0.9rem",
-          }}
+          className="py-3 px-6 rounded-md border border-edge bg-surface text-fg cursor-pointer text-sm"
         >
           Google
         </button>
         <button
           onClick={() => handleOAuth("github")}
-          style={{
-            padding: "0.75rem 1.5rem",
-            borderRadius: "8px",
-            border: "1px solid var(--card-border)",
-            background: "var(--card-bg)",
-            color: "var(--fg)",
-            cursor: "pointer",
-            fontSize: "0.9rem",
-          }}
+          className="py-3 px-6 rounded-md border border-edge bg-surface text-fg cursor-pointer text-sm"
         >
           GitHub
         </button>
       </div>
 
-      <div
-        style={{
-          color: "var(--muted)",
-          fontSize: "0.85rem",
-          marginBottom: "1.5rem",
-        }}
-      >
+      <div className="text-fg-muted text-sm mb-6">
         or continue with email
       </div>
 
       <form
         onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "0.75rem",
-          width: "100%",
-          maxWidth: "400px",
-        }}
+        className="flex flex-col gap-3 w-full max-w-[400px]"
       >
         <input
           type="email"
@@ -121,15 +84,7 @@ export default function LoginPage() {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Email"
           required
-          style={{
-            padding: "0.75rem 1rem",
-            borderRadius: "8px",
-            border: "1px solid var(--card-border)",
-            background: "var(--card-bg)",
-            color: "var(--fg)",
-            fontSize: "1rem",
-            outline: "none",
-          }}
+          className="py-3 px-4 rounded-md border border-edge bg-surface text-fg text-base outline-none"
         />
         <input
           type="password"
@@ -138,39 +93,24 @@ export default function LoginPage() {
           placeholder="Password"
           required
           minLength={6}
-          style={{
-            padding: "0.75rem 1rem",
-            borderRadius: "8px",
-            border: "1px solid var(--card-border)",
-            background: "var(--card-bg)",
-            color: "var(--fg)",
-            fontSize: "1rem",
-            outline: "none",
-          }}
+          className="py-3 px-4 rounded-md border border-edge bg-surface text-fg text-base outline-none"
         />
         <button
           type="submit"
           disabled={loading}
-          style={{
-            padding: "0.75rem",
-            borderRadius: "8px",
-            border: "none",
-            background: "var(--accent)",
-            color: "#fff",
-            fontSize: "1rem",
-            fontWeight: 600,
-            cursor: loading ? "wait" : "pointer",
-          }}
+          className={`py-3 rounded-md border-none bg-primary text-white text-base font-semibold ${
+            loading ? "cursor-wait" : "cursor-pointer"
+          }`}
         >
           {loading ? "..." : isSignUp ? "Sign Up" : "Sign In"}
         </button>
       </form>
 
       {error && (
-        <p style={{ color: "var(--danger)", marginTop: "1rem" }}>{error}</p>
+        <p className="text-danger mt-4">{error}</p>
       )}
       {message && (
-        <p style={{ color: "var(--success)", marginTop: "1rem" }}>{message}</p>
+        <p className="text-success mt-4">{message}</p>
       )}
 
       <button
@@ -179,14 +119,7 @@ export default function LoginPage() {
           setError("");
           setMessage("");
         }}
-        style={{
-          marginTop: "1.5rem",
-          background: "none",
-          border: "none",
-          color: "var(--accent)",
-          cursor: "pointer",
-          fontSize: "0.9rem",
-        }}
+        className="mt-6 bg-transparent border-none text-fg-link cursor-pointer text-sm"
       >
         {isSignUp
           ? "Already have an account? Sign in"
