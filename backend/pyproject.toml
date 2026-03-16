@@ -1,7 +1,7 @@
 [project]
-name = "web-presence-scanner"
+name = "scopaly"
 version = "0.1.0"
-description = "Web presence scanner API"
+description = "Scopaly - Online presence scanner API"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.115",
@@ -16,3 +16,6 @@ dependencies = [
     "sse-starlette>=2.2",
     "PyJWT[crypto]>=2.9",
 ]
+
+[tool.setuptools.packages.find]
+include = ["app*"]

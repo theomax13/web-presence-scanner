@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Web Presence Scanner",
+  title: "Scopaly",
   description: "Discover and understand your digital footprint",
 };
 

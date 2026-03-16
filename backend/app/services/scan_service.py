@@ -1,6 +1,9 @@
 import asyncio
+import logging
 import uuid
 from datetime import datetime, timezone
+
+logger = logging.getLogger(__name__)
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -57,7 +60,10 @@ async def run_scan(session: AsyncSession, scan_id: uuid.UUID, cache: CacheServic
         result = await scanner.scan(scan.query, scan.input_type)
 
         scan_result.data = result.data
+        scan_result.error = result.error
         scan_result.status = "error" if result.error else "completed"
+        if result.error:
+            logger.warning("Scanner %s failed for %r: %s", scanner.name, scan.query, result.error)
         await session.commit()
 
         # Cache successful results

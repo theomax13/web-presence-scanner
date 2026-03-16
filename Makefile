@@ -1,5 +1,19 @@
-.PHONY: dev down logs migrate revision shell
+.PHONY: dev down logs migrate revision shell dev-backend dev-frontend install
 
+# --- Local development (no Docker) ---
+VENV := .venv/bin
+
+install:
+	cd backend && ../$(VENV)/pip install -e ".[dev]" 2>/dev/null || ../$(VENV)/pip install -e .
+	cd frontend && npm install
+
+dev-backend:
+	cd backend && ../$(VENV)/uvicorn app.main:app --reload --port 8000
+
+dev-frontend:
+	cd frontend && npm run dev
+
+# --- Docker (full stack) ---
 dev:
 	docker compose up --build
 

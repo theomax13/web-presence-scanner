@@ -115,7 +115,7 @@ export default function Home() {
           marginBottom: "0.5rem",
         }}
       >
-        Web Presence Scanner
+        Scopaly
       </h1>
       <p
         style={{

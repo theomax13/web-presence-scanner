@@ -5,6 +5,7 @@ export interface ScanResult {
   source: string;
   status: string;
   data: Record<string, unknown> | null;
+  error: string | null;
   created_at: string;
 }
 

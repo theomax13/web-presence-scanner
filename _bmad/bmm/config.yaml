@@ -3,7 +3,7 @@
 # Version: 6.0.4
 # Date: 2026-03-03T16:04:59.981Z
 
-project_name: web-presence-scanner
+project_name: scopaly
 user_skill_level: intermediate
 planning_artifacts: "{project-root}/_bmad-output/planning-artifacts"
 implementation_artifacts: "{project-root}/_bmad-output/implementation-artifacts"

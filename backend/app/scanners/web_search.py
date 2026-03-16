@@ -1,53 +1,74 @@
+import logging
+
 import httpx
 
 from app.config import settings
 from app.scanners.base import BaseScanner, ScannerResult
 
+logger = logging.getLogger(__name__)
+
 
 class WebSearchScanner(BaseScanner):
     name = "web_search"
-    display_name = "Web Search"
+    display_name = "Online Profiles & Mentions"
     supported_input_types = ["email", "username", "domain", "name"]
 
+    def _build_query(self, query: str, input_type: str) -> str:
+        if input_type == "email":
+            return f'"{query}"'
+        if input_type == "username":
+            clean = query.lstrip("@")
+            return f'"{clean}" OR "@{clean}"'
+        if input_type == "domain":
+            return f'"{query}"'
+        # name
+        return f'"{query}"'
+
     async def scan(self, query: str, input_type: str) -> ScannerResult:
-        if not settings.google_api_key or not settings.google_cse_id:
+        if not settings.searlo_api_key:
             return ScannerResult(
                 source=self.name,
                 data={},
                 found=False,
-                error="Google API key or CSE ID not configured",
+                error="Searlo API key not configured",
             )
+
+        search_query = self._build_query(query, input_type)
+        params = {"q": search_query, "limit": 10}
+        logger.info("Searlo request: GET /api/v1/search/web params=%s", params)
 
         try:
             async with httpx.AsyncClient() as client:
                 resp = await client.get(
-                    "https://www.googleapis.com/customsearch/v1",
-                    params={
-                        "key": settings.google_api_key,
-                        "cx": settings.google_cse_id,
-                        "q": query,
-                        "num": 10,
+                    "https://api.searlo.tech/api/v1/search/web",
+                    params=params,
+                    headers={
+                        "x-api-key": settings.searlo_api_key,
                     },
                     timeout=15,
                 )
 
+            logger.info("Searlo response: %s body=%s", resp.status_code, resp.text[:500])
+
             if resp.status_code != 200:
+                body = resp.text
+                logger.error("Searlo API %s: %s", resp.status_code, body)
                 return ScannerResult(
                     source=self.name,
                     data={},
                     found=False,
-                    error=f"Google API returned {resp.status_code}",
+                    error=f"Searlo API {resp.status_code}: {body}",
                 )
 
             data = resp.json()
-            items = data.get("items", [])
+            items = data.get("organic", [])
 
             results = [
                 {
                     "title": item.get("title", ""),
                     "link": item.get("link", ""),
                     "snippet": item.get("snippet", ""),
-                    "display_link": item.get("displayLink", ""),
+                    "display_link": item.get("displayedLink", item.get("domain", "")),
                 }
                 for item in items
             ]
@@ -59,6 +80,6 @@ class WebSearchScanner(BaseScanner):
             )
 
         except httpx.TimeoutException:
-            return ScannerResult(source=self.name, data={}, found=False, error="Google search timed out")
+            return ScannerResult(source=self.name, data={}, found=False, error="Search timed out")
         except Exception as e:
             return ScannerResult(source=self.name, data={}, found=False, error=str(e))

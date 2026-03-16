@@ -58,7 +58,7 @@ export default function LoginPage() {
       }}
     >
       <h1 style={{ fontSize: "2rem", fontWeight: 700, marginBottom: "0.5rem" }}>
-        Web Presence Scanner
+        Scopaly
       </h1>
       <p style={{ color: "var(--muted)", marginBottom: "2rem" }}>
         {isSignUp ? "Create your account" : "Sign in to your account"}

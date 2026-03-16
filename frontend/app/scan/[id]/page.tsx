@@ -8,7 +8,7 @@ import Link from "next/link";
 
 const SOURCE_LABELS: Record<string, string> = {
   hibp: "Have I Been Pwned",
-  web_search: "Web Search",
+  web_search: "Online Profiles & Mentions",
 };
 
 function SourceCard({ result }: { result: ScanResult }) {
@@ -55,7 +55,7 @@ function SourceCard({ result }: { result: ScanResult }) {
 
       {isError && (
         <p style={{ color: "var(--danger)" }}>
-          Error retrieving data from this source.
+          {result.error || "Error retrieving data from this source."}
         </p>
       )}
 
@@ -207,7 +207,10 @@ export default function ScanPage() {
         return;
       }
       getScan(id, token)
-        .then(setScan)
+        .then((s) => {
+          console.log("[Scopaly] Scan response:", JSON.stringify(s, null, 2));
+          setScan(s);
+        })
         .catch(() => setError("Scan not found"));
     });
   }, [id]);

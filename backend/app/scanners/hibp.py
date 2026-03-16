@@ -24,7 +24,7 @@ class HIBPScanner(BaseScanner):
                     f"https://haveibeenpwned.com/api/v3/breachedaccount/{query}",
                     headers={
                         "hibp-api-key": settings.hibp_api_key,
-                        "user-agent": "WebPresenceScanner",
+                        "user-agent": "Scopaly",
                     },
                     params={"truncateResponse": "false"},
                     timeout=15,

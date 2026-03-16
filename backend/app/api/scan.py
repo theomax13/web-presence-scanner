@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sse_starlette.sse import EventSourceResponse
 
 from app.auth import get_current_user
+from app.config import settings
 from app.database import get_session
 from app.schemas.scan import ScanCreate, ScanOut, ScanResultOut
 from app.services import scan_service
@@ -23,15 +24,16 @@ async def create_scan(
     scan = await scan_service.create_scan(session, body.query, user_id=user["id"])
 
     # For V0 without a running worker, execute the scan inline
-    from app.services.cache_service import CacheService
-    from redis.asyncio import Redis
-    from app.config import settings
+    cache = None
+    if settings.redis_url:
+        try:
+            from app.services.cache_service import CacheService
+            from redis.asyncio import Redis
 
-    try:
-        redis = Redis.from_url(settings.redis_url)
-        cache = CacheService(redis)
-    except Exception:
-        cache = None
+            redis = Redis.from_url(settings.redis_url)
+            cache = CacheService(redis)
+        except Exception:
+            pass
 
     await scan_service.run_scan(session, scan.id, cache)
 

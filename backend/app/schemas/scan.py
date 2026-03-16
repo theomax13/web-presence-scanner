@@ -13,6 +13,7 @@ class ScanResultOut(BaseModel):
     source: str
     status: str
     data: dict | None = None
+    error: str | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}

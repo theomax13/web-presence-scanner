@@ -1,9 +1,14 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings
+
+# .env at project root (web-presence-scanner/.env)
+_env_file = Path(__file__).resolve().parents[2] / ".env"
 
 
 class Settings(BaseSettings):
-    database_url: str = "postgresql+asyncpg://postgres:postgres@db:5432/postgres"
-    redis_url: str = "redis://redis:6379/0"
+    database_url: str = ""
+    redis_url: str = ""
 
     # Supabase
     supabase_url: str = ""
@@ -12,13 +17,12 @@ class Settings(BaseSettings):
 
     # API keys
     hibp_api_key: str = ""
-    google_api_key: str = ""
-    google_cse_id: str = ""
+    searlo_api_key: str = ""
 
     # Cache TTL in seconds (default 1 hour)
     cache_ttl: int = 3600
 
-    model_config = {"env_file": ".env"}
+    model_config = {"env_file": str(_env_file), "extra": "ignore"}
 
 
 settings = Settings()
