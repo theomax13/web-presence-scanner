@@ -3,17 +3,17 @@ import logging
 import uuid
 from datetime import datetime, timezone
 
-logger = logging.getLogger(__name__)
-
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.models.scan import Scan, ScanResult
+from app.scans.models import Scan, ScanResult
 from app.scanners.base import BaseScanner
 from app.scanners.registry import registry
 from app.services.cache_service import CacheService
-from app.services.input_detector import detect_input_type
+from app.shared.input_detector import detect_input_type
+
+logger = logging.getLogger(__name__)
 
 
 async def create_scan(session: AsyncSession, query: str, user_id: str) -> Scan:
@@ -37,7 +37,11 @@ async def get_scan(session: AsyncSession, scan_id: uuid.UUID) -> Scan | None:
     return result.scalar_one_or_none()
 
 
-async def run_scan(session: AsyncSession, scan_id: uuid.UUID, cache: CacheService | None = None):
+async def run_scan(
+    session: AsyncSession,
+    scan_id: uuid.UUID,
+    cache: CacheService | None = None,
+) -> None:
     scan = await get_scan(session, scan_id)
     if not scan:
         return
@@ -47,8 +51,7 @@ async def run_scan(session: AsyncSession, scan_id: uuid.UUID, cache: CacheServic
 
     scanners = registry.get_for_input_type(scan.input_type)
 
-    async def run_single(scanner: BaseScanner, scan_result: ScanResult):
-        # Check cache first
+    async def _run_single(scanner: BaseScanner, scan_result: ScanResult) -> None:
         if cache:
             cached = await cache.get(scanner.name, scan.query)
             if cached:
@@ -62,22 +65,27 @@ async def run_scan(session: AsyncSession, scan_id: uuid.UUID, cache: CacheServic
         scan_result.data = result.data
         scan_result.error = result.error
         scan_result.status = "error" if result.error else "completed"
+
         if result.error:
-            logger.warning("Scanner %s failed for %r: %s", scanner.name, scan.query, result.error)
+            logger.warning(
+                "Scanner %s failed for %r: %s",
+                scanner.name,
+                scan.query,
+                result.error,
+            )
+
         await session.commit()
 
-        # Cache successful results
         if cache and not result.error:
             await cache.set(scanner.name, scan.query, result.data)
 
-    # Map scanner name to scan_result
     result_by_source = {r.source: r for r in scan.results}
 
     tasks = []
     for scanner in scanners:
         scan_result = result_by_source.get(scanner.name)
         if scan_result:
-            tasks.append(run_single(scanner, scan_result))
+            tasks.append(_run_single(scanner, scan_result))
 
     await asyncio.gather(*tasks)
 

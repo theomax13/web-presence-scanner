@@ -5,10 +5,10 @@ from arq.connections import RedisSettings
 from app.config import settings
 from app.database import async_session
 from app.scanners.hibp import HIBPScanner
-from app.scanners.web_search import WebSearchScanner
 from app.scanners.registry import registry
+from app.scanners.web_search import WebSearchScanner
 from app.services.cache_service import CacheService
-from app.services.scan_service import run_scan
+from app.scans.service import run_scan
 
 
 async def execute_scan(ctx, scan_id: str):

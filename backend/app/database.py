@@ -3,7 +3,6 @@ from sqlalchemy.orm import DeclarativeBase
 
 from app.config import settings
 
-# Ensure the URL uses asyncpg driver regardless of what's in .env
 _db_url = settings.database_url
 if _db_url.startswith("postgresql://"):
     _db_url = _db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
@@ -18,4 +17,9 @@ class Base(DeclarativeBase):
 
 async def get_session() -> AsyncSession:
     async with async_session() as session:
-        yield session
+        try:
+            yield session
+            await session.commit()
+        except Exception:
+            await session.rollback()
+            raise
