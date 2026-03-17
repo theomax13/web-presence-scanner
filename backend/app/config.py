@@ -2,13 +2,18 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings
 
-# .env at project root (web-presence-scanner/.env)
-_env_file = Path(__file__).resolve().parents[2] / ".env"
+# Try project root .env for local dev (web-presence-scanner/.env)
+# In Docker, env vars are injected via docker-compose env_file — no .env needed
+_candidates = [
+    Path(__file__).resolve().parents[2] / ".env",  # local: backend/app/config.py -> ../../.env
+    Path("/app").parent / ".env",                   # fallback
+]
+_env_file = next((p for p in _candidates if p.is_file()), None)
 
 
 class Settings(BaseSettings):
     database_url: str = ""
-    redis_url: str = ""
+    redis_url: str = "redis://localhost:6379"
 
     # Supabase
     supabase_url: str = ""
@@ -22,7 +27,10 @@ class Settings(BaseSettings):
     # Cache TTL in seconds (default 1 hour)
     cache_ttl: int = 3600
 
-    model_config = {"env_file": str(_env_file), "extra": "ignore"}
+    model_config = {
+        "env_file": str(_env_file) if _env_file else None,
+        "extra": "ignore",
+    }
 
 
 settings = Settings()

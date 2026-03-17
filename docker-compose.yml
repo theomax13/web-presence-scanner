@@ -1,9 +1,12 @@
 services:
   backend:
     build: ./backend
+    image: scopaly-backend
     ports:
       - "8000:8000"
     env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379
     volumes:
       - ./backend:/app
     depends_on:
@@ -12,11 +15,15 @@ services:
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   worker:
-    build: ./backend
+    image: scopaly-backend
     env_file: .env
+    environment:
+      - REDIS_URL=redis://redis:6379
     volumes:
       - ./backend:/app
     depends_on:
+      backend:
+        condition: service_started
       redis:
         condition: service_healthy
     command: arq app.workers.scan_worker.WorkerSettings
@@ -29,6 +36,7 @@ services:
     volumes:
       - ./frontend:/app
       - /app/node_modules
+      - /app/.next
     depends_on:
       - backend
 
