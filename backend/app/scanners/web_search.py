@@ -4,6 +4,7 @@ import httpx
 
 from app.config import settings
 from app.scanners.base import BaseScanner, ScannerResult
+from app.shared.http_client import get_http_client
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,6 @@ class WebSearchScanner(BaseScanner):
             return f'"{clean}" OR "@{clean}"'
         if input_type == "domain":
             return f'"{query}"'
-        # name
         return f'"{query}"'
 
     async def scan(self, query: str, input_type: str) -> ScannerResult:
@@ -38,17 +38,16 @@ class WebSearchScanner(BaseScanner):
         logger.info("Searlo request: GET /api/v1/search/web params=%s", params)
 
         try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.get(
-                    "https://api.searlo.tech/api/v1/search/web",
-                    params=params,
-                    headers={
-                        "x-api-key": settings.searlo_api_key,
-                    },
-                    timeout=15,
-                )
+            client = await get_http_client()
+            resp = await client.get(
+                "https://api.searlo.tech/api/v1/search/web",
+                params=params,
+                headers={"x-api-key": settings.searlo_api_key},
+            )
 
-            logger.info("Searlo response: %s body=%s", resp.status_code, resp.text[:500])
+            logger.info(
+                "Searlo response: %s body=%s", resp.status_code, resp.text[:500]
+            )
 
             if resp.status_code != 200:
                 body = resp.text
@@ -68,7 +67,9 @@ class WebSearchScanner(BaseScanner):
                     "title": item.get("title", ""),
                     "link": item.get("link", ""),
                     "snippet": item.get("snippet", ""),
-                    "display_link": item.get("displayedLink", item.get("domain", "")),
+                    "display_link": item.get(
+                        "displayedLink", item.get("domain", "")
+                    ),
                 }
                 for item in items
             ]
@@ -80,6 +81,10 @@ class WebSearchScanner(BaseScanner):
             )
 
         except httpx.TimeoutException:
-            return ScannerResult(source=self.name, data={}, found=False, error="Search timed out")
+            return ScannerResult(
+                source=self.name, data={}, found=False, error="Search timed out"
+            )
         except Exception as e:
-            return ScannerResult(source=self.name, data={}, found=False, error=str(e))
+            return ScannerResult(
+                source=self.name, data={}, found=False, error=str(e)
+            )

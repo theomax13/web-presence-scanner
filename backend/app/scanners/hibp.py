@@ -2,6 +2,7 @@ import httpx
 
 from app.config import settings
 from app.scanners.base import BaseScanner, ScannerResult
+from app.shared.http_client import get_http_client
 
 
 class HIBPScanner(BaseScanner):
@@ -19,19 +20,20 @@ class HIBPScanner(BaseScanner):
             )
 
         try:
-            async with httpx.AsyncClient() as client:
-                resp = await client.get(
-                    f"https://haveibeenpwned.com/api/v3/breachedaccount/{query}",
-                    headers={
-                        "hibp-api-key": settings.hibp_api_key,
-                        "user-agent": "Scopaly",
-                    },
-                    params={"truncateResponse": "false"},
-                    timeout=15,
-                )
+            client = await get_http_client()
+            resp = await client.get(
+                f"https://haveibeenpwned.com/api/v3/breachedaccount/{query}",
+                headers={
+                    "hibp-api-key": settings.hibp_api_key,
+                    "user-agent": "Scopaly",
+                },
+                params={"truncateResponse": "false"},
+            )
 
             if resp.status_code == 404:
-                return ScannerResult(source=self.name, data={"breaches": []}, found=False)
+                return ScannerResult(
+                    source=self.name, data={"breaches": []}, found=False
+                )
 
             if resp.status_code == 200:
                 breaches = resp.json()
@@ -62,6 +64,10 @@ class HIBPScanner(BaseScanner):
             )
 
         except httpx.TimeoutException:
-            return ScannerResult(source=self.name, data={}, found=False, error="HIBP request timed out")
+            return ScannerResult(
+                source=self.name, data={}, found=False, error="HIBP request timed out"
+            )
         except Exception as e:
-            return ScannerResult(source=self.name, data={}, found=False, error=str(e))
+            return ScannerResult(
+                source=self.name, data={}, found=False, error=str(e)
+            )

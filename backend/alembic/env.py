@@ -8,7 +8,7 @@ from alembic import context
 
 from app.config import settings
 from app.database import Base
-from app.models.scan import Scan, ScanResult  # noqa: F401 — register models
+from app.scans.models import Scan, ScanResult  # noqa: F401 — register models
 
 config = context.config
 config.set_main_option("sqlalchemy.url", settings.database_url)
