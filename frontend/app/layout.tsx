@@ -13,7 +13,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Scopaly",
+  title: "Scopaly — Digital Footprint Scanner",
   description: "Discover and understand your digital footprint",
 };
 
@@ -24,7 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} bg-base text-fg antialiased`}>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} bg-base text-fg antialiased font-[family-name:var(--font-geist-sans)]`}
+      >
         {children}
       </body>
     </html>
