@@ -2,7 +2,6 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings
 
-# .env at project root (web-presence-scanner/.env)
 _env_file = Path(__file__).resolve().parents[2] / ".env"
 
 
@@ -19,8 +18,11 @@ class Settings(BaseSettings):
     hibp_api_key: str = ""
     searlo_api_key: str = ""
 
-    # Cache TTL in seconds (default 1 hour)
+    # Cache TTL in seconds
     cache_ttl: int = 3600
+
+    # CORS
+    cors_origins: list[str] = ["http://localhost:3000"]
 
     model_config = {"env_file": str(_env_file), "extra": "ignore"}
 
