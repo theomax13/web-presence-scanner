@@ -1,108 +1,66 @@
-# Scopaly — Web Presence Scanner
+# CLAUDE.md
+## Présentation du projet
+Regarde le @README.md afin de savoir de quoi le projet retourne
 
-## Projet
-
-**Scopaly** est un outil SaaS d'OSINT qui scanne la présence en ligne (fuites de données, mentions web) pour les particuliers et entreprises. L'objectif est de démocratiser l'OSINT entre le simple "Google ton nom" et les outils pro coûteux (Maltego, SpiderFoot).
-
-- **Fondateurs :** Théo (dev) et Léo (dev)
-- **Contact :** admin.scopaly@gmail.com
-- **Modèle :** Freemium, transparence-first
-- **Démarrage :** Mars 2026
-
-## Stack technique
-
-| Couche | Techno |
-|--------|--------|
-| Backend | FastAPI (Python) |
-| Frontend | Next.js 14 (App Router) |
-| Base de données | Supabase (Postgres hébergé) |
-| Auth | Supabase Auth (OAuth Google/GitHub + email/password) |
-| File d'attente | ARQ (async Redis job queue) |
-| Streaming résultats | SSE (Server-Sent Events) |
-| Conteneurisation | Docker Compose (optionnel, dev local sans Docker possible) |
-
-## Architecture
-
-```
-/
-├── backend/
-│   └── app/
-│       ├── api/           # Routes FastAPI (health, scan)
-│       │   ├── router.py  # Router principal
-│       │   ├── scan.py    # Endpoints de scan
-│       │   └── health.py  # Health check
-│       ├── scanners/      # Plugins de scan (pattern BaseScanner)
-│       │   ├── base.py    # ABC BaseScanner
-│       │   ├── hibp.py    # Have I Been Pwned
-│       │   ├── web_search.py  # Recherche web
-│       │   └── registry.py    # Registre des scanners
-│       ├── models/        # Modèles SQLAlchemy
-│       ├── schemas/       # Schémas Pydantic
-│       ├── services/      # Logique métier
-│       ├── workers/       # Workers ARQ
-│       ├── auth.py        # Vérification JWT Supabase
-│       ├── config.py      # Configuration (env vars)
-│       ├── database.py    # Connexion DB
-│       └── main.py        # App FastAPI + lifespan (enregistrement scanners)
-├── frontend/
-│   └── app/
-│       ├── login/         # Page de connexion
-│       ├── scan/          # Page de scan
-│       ├── layout.tsx     # Layout principal
-│       └── page.tsx       # Page d'accueil
-├── docker-compose.yml
-└── Makefile
-```
-
-### Principes clés
-
-- **Plugin pattern pour les scanners :** chaque source implémente `BaseScanner` (ABC), enregistré dans `main.py` lifespan. Ajouter une source = 1 fichier + l'enregistrer.
-- **API versionnée** : tous les endpoints sous `/api/v1/`
-- **Auth obligatoire** sur tous les endpoints de scan. JWT vérifié via `app/auth.py`. Scans liés au `user_id`.
-- **JSONB** pour les résultats de scan (schéma flexible par source)
-- **Frontend** utilise `@supabase/ssr` pour l'auth, passe un Bearer token au backend API
-- **Supabase partagé** : Théo et Léo partagent la même instance Supabase hébergée
-
-## Développement local
-
-### Prérequis
-- Python 3.11+ avec venv
-- Node.js 18+
-- Redis (pour ARQ)
-
-### Commandes (Makefile)
-
+### Commandes (Docker — recommandé)
 ```bash
-# Installation des dépendances
-make install
-
-# Lancer le backend (sans Docker)
-make dev-backend    # uvicorn sur port 8000
-
-# Lancer le frontend (sans Docker)
-make dev-frontend   # next dev
-
-# Avec Docker (stack complète)
-make dev            # docker compose up --build
-make down           # docker compose down
-make logs           # docker compose logs -f
-make migrate        # alembic upgrade head
-make revision msg="description"  # nouvelle migration
+make dev          # Build et démarre tous les services (backend, frontend, redis, worker)
+make down         # Arrête tous les services
+make logs         # Affiche les logs de tous les services
+make migrate      # Applique les migrations Alembic en attente
+make revision msg="description"  # Génère une nouvelle migration
+make shell        # Ouvre un REPL Python dans le conteneur backend
 ```
+
+### Commandes Local (sans Docker)
+```bash
+make install      # Installe les dépendances backend + frontend
+make dev-backend  # Uvicorn sur le port 8000 avec hot-reload (nécessite .venv)
+make dev-frontend # Serveur de développement Next.js sur le port 3000
+```
+
+### Stack technique
+- Next.js 16 (App Router) + TypeScript strict
+- FastAPI + python 3.12 + SQLAlchemy + Alembic + Redis + httpx + ARQ
+- Supabase (auth, database, storage)
+- TailwindCSS 4
+- VPS hostinger (déploiement)
+- npm
+
+### Organisation du backend (`backend/app/`)
+| Répertoire | Rôle |
+|------------|------|
+| `scans/` | Router, modèles SQLAlchemy (`Scan`, `ScanResult`), schémas Pydantic, service d'orchestration des scans |
+| `scanners/` | Système de plugins : classe abstraite `BaseScanner`, `registry.py`, implémentations des scanners |
+| `auth/` | Dépendance JWT (`get_current_user`), schéma `CurrentUser` |
+| `shared/` | Client httpx singleton, détecteur de type d'entrée (email/domain/username/name), gestionnaires d'exceptions |
+| `workers/` | Worker ARQ (`WorkerSettings`) pour l'exécution asynchrone des scans |
+| `services/` | Wrapper du cache Redis |
+
+### Structure des pages frontend (`frontend/app/`)
+| Route | Fichier | Rôle |
+|-------|---------|------|
+| `/` | `page.tsx` | Formulaire de saisie du scan, lance le scan, redirige vers les résultats |
+| `/scan/[id]` | `scan/[id]/page.tsx` | S'abonne au flux SSE, affiche les résultats en temps réel |
+| `/login` | `login/page.tsx` | Interface d'authentification Supabase |
+
+`lib/api.ts` contient tous les wrappers d'appels API (`createScan`, `getScan`).
+`lib/supabase.ts` initialise les clients Supabase navigateur/serveur.
 
 ### Variables d'environnement
+Regarde le fichier @.env.example a la racine du projet
 
-Le backend nécessite les variables Supabase (URL, clés) et Redis dans un `.env`. Ne pas commiter le `.env`.
+### Versionnement de l'API
+Toutes les routes backend sont préfixées `/api/v1`. Le CORS est configuré pour `http://localhost:3000`.
 
 ## Conventions
+- Server Components par défaut pour le frontend
+- 'use client' uniquement si nécessaire pour le frontend
+- Zod pour toute validation pour le frontend
+- Pas de any en TypeScript
+- Nommage : PascalCase composants, camelCase utils
 
-- Le backend est en **Python async** (FastAPI natif)
-- Les scanners suivent le pattern ABC `BaseScanner` — ne pas créer de scanner en dehors de ce pattern
-- Les résultats de scan sont stockés en JSONB — pas de schéma rigide par source
-- Favoriser la simplicité et l'accessibilité pour les utilisateurs non-techniques
-- Pas de framework CSS dans le V0
-
-## Ressources externes
-
-- **Notion :** Le hub projet "Scanner de Présence Web" contient la roadmap (V1/V2/Exploration), le registre de risques, les décisions de stack et les checklists par phase
-- **Supabase :** Instance partagée entre les deux devs (Postgres + Auth)
+## Règles
+- RLS activé sur TOUTES les tables Supabase
+- Jamais de clé API côté client
+- Toujours vérifier l'auth avant les mutations

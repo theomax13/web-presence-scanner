@@ -1,0 +1,1 @@
+**Scopaly** — application full-stack de scan d'empreinte numérique qui découvre la présence en ligne et l'exposition des données d'un utilisateur. Le backend exécute des plugins de scan contre des APIs externes (HaveIBeenPwned, Searlo) et diffuse les résultats au frontend via SSE.
