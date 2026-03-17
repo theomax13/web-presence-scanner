@@ -11,7 +11,7 @@ dev-backend:
 	cd backend && ../$(VENV)/uvicorn app.main:app --reload --port 8000
 
 dev-frontend:
-	cd frontend && npm run dev
+	cd frontend && npm install && npm run dev
 
 # --- Docker (full stack) ---
 dev:
